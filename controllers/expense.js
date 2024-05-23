@@ -23,18 +23,24 @@ exports.addExpense = async (req, res) => {
 };
 
 // Get Expenses
-exports.getExpenses=async(req,res,next)=>{
-    console.log("get expenses req.user.id");
-    console.log(req.user.id);
+exports.getExpenses = async (req, res, next) => {
     try {
-        const expenses=await req.user.getExpenseDetails()
-    //     const expenses= await expenseApp.findAll({where:{
-    //     userDetailId:req.user.id
-    // }
-    // })
-        res.status(200).json({allExpense:expenses,isPremiumuser:req.user.isPremiumuser});
-     }catch(err){console.log(err)};
+        if (!req.user || !req.user.id) {
+            console.error('User ID is missing in the request object');
+            return res.status(400).json({ error: 'User ID is missing in the request object' });
+        }
 
+        const userId = req.user.id;
+        console.log('User ID:', userId);
+
+        const expenses = await Expense.findAll({ where: { userId } });
+        console.log('Expenses:', expenses);
+
+        res.status(200).json(expenses);
+    } catch (error) {
+        console.log("Error:", error);
+        res.status(500).json({ error: 'An error occurred', details: error.message });
+    }
 };
 
 // Delete Expense

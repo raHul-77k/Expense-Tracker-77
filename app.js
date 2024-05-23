@@ -7,6 +7,7 @@ const cors = require('cors');
 const userRoutes = require('./routes/userRoutes'); 
 const userExpense = require('./routes/expenseRoute');
 const purchaseRoute = require('./routes/purchase')
+const premiumFeature = require('./routes/premiumFeatures')
 
 
 const User = require('./models/User');
@@ -31,6 +32,7 @@ app.use(express.static('public'));
 app.use('/user', userRoutes);
 app.use('/expense', userExpense);
 app.use('/purchase',purchaseRoute);
+app.use('/premium',premiumFeature);
 
 //relationship between user and expenses
 User.hasMany(Expense);
