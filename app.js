@@ -6,13 +6,15 @@ const cors = require('cors');
 
 const userRoutes = require('./routes/userRoutes'); 
 const userExpense = require('./routes/expenseRoute');
-const purchaseRoute = require('./routes/purchase')
-const premiumFeature = require('./routes/premiumFeatures')
+const purchaseRoute = require('./routes/purchase');
+const premiumFeature = require('./routes/premiumFeatures');
+const resetPasswordRoutes = require('./routes/password')
 
 
 const User = require('./models/User');
 const Expense = require('./models/Expense');
 const Order = require('./models/Order');
+const forgotpassword = require('./models/forgotpassword')
 
 require('dotenv').config();
 
@@ -33,6 +35,7 @@ app.use('/user', userRoutes);
 app.use('/expense', userExpense);
 app.use('/purchase',purchaseRoute);
 app.use('/premium',premiumFeature);
+app.use('/password', resetPasswordRoutes);
 
 //relationship between user and expenses
 User.hasMany(Expense);
@@ -42,6 +45,12 @@ Expense.belongsTo(User);
 // relationship between user and order
 User.hasMany(Order);
 Order.belongsTo(User);
+
+
+//relationship between user and password
+User.hasMany(forgotpassword);
+forgotpassword.belongsTo(User);
+
 
 // Sync the database  
 sequelize.sync({force : false})

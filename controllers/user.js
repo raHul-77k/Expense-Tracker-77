@@ -2,6 +2,7 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
+require('dotenv').config();
 
 exports.postUserDetails = async (req, res, next) => {
     console.log("in postUserDetails");
@@ -69,3 +70,4 @@ exports.postLoginDetails = async (req, res, next) => {
         res.status(500).json({ error: 'An error occurred', details: error.message });
     }
 };   
+

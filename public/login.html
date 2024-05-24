@@ -8,6 +8,9 @@
         .error {
             color: red;
         }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -21,8 +24,20 @@
 
         <button type="submit">Login</button>
     </form>
+    <!-- Forgot Password Section -->
+    <div id="forgotPasswordSection" class="hidden">
+        <h2>Forgot Password</h2>
+        <form id="forgotPasswordForm">
+            <label for="forgotEmail">Enter your email:</label>
+            <input type="email" id="forgotEmail" name="forgotEmail" required>
+            <button type="submit">SEND MAIL</button>
+        </form>
+    </div>
 
     <div id="errorMessage" class="error"></div>
+
+    <!-- Forgot Password Button -->
+    <button id="forgotPasswordBtn">Forgot Password?</button>
 
     <p>Don't have an account? <button id="signupRedirect">Sign up here</button></p>
 
@@ -66,6 +81,37 @@
         // Redirect to signup page
         document.getElementById('signupRedirect').addEventListener('click', function() {
             window.location.href = 'signup.html'; // Adjust the path if needed
+        });
+
+        // Toggle Forgot Password Section
+        const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+        const forgotPasswordSection = document.getElementById('forgotPasswordSection');
+        forgotPasswordBtn.addEventListener('click', function() {
+            forgotPasswordSection.classList.toggle('hidden');
+            this.classList.add('hidden'); // Hide the "Forgot Password?" button
+        });
+
+        // Forgot Password Form Submission
+        document.getElementById('forgotPasswordForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const forgotEmail = document.getElementById('forgotEmail').value;
+
+            console.log('Forgot Password form submitted'); // Add this line
+
+            try {
+                const response = await axios.post('http://localhost:3000/password/forgotpassword', {
+                    email: forgotEmail
+                });
+
+                if (response.status === 200) {
+                    alert('Link to reset password sent to your email');
+                } else {
+                    alert('Failed to send reset password link');
+                }
+            } catch (error) {
+                console.error('Error occurred while processing forgot password:', error);
+                alert('Failed to send reset password link');
+            }
         });
     </script>
 </body>
