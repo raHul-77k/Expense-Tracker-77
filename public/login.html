@@ -24,6 +24,7 @@
 
         <button type="submit">Login</button>
     </form>
+
     <!-- Forgot Password Section -->
     <div id="forgotPasswordSection" class="hidden">
         <h2>Forgot Password</h2>
@@ -41,6 +42,7 @@
 
     <p>Don't have an account? <button id="signupRedirect">Sign up here</button></p>
 
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         document.getElementById('loginForm').addEventListener('submit', async function(event) {
             event.preventDefault(); // Prevent the default form submission
@@ -96,7 +98,7 @@
             event.preventDefault();
             const forgotEmail = document.getElementById('forgotEmail').value;
 
-            console.log('Forgot Password form submitted'); // Add this line
+            console.log('Forgot Password form submitted with email:', forgotEmail); // Add this line
 
             try {
                 const response = await axios.post('http://localhost:3000/password/forgotpassword', {
