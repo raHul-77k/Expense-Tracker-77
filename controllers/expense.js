@@ -1,24 +1,37 @@
 const Expense = require('../models/Expense');
 const jwt = require('jsonwebtoken');
+const sequelize = require('../util/database');
 
 // Add Expense
 exports.addExpense = async (req, res) => {
+    const { amount, description, category } = req.body;
+
+    if (amount === undefined || amount <= 0) {
+        return res.status(400).json({ success: false, message: 'parameter missing or invalid' });
+    }
+
+    const t = await sequelize.transaction();
+
     try {
-        console.log('req.user in addExpense:', req.user);
-        const userId = req.user.id; // Ensure this is defined
-        const { amount, description, category } = req.body;
+        const expense = await Expense.create(
+            { amount, description, category, userId: req.user.id },
+            { transaction: t }
+        );
 
-        const newExpense = await Expense.create({
-            amount,
-            description,
-            category,
-            userId
-        });
+        const totalExpense = Number(req.user.totalExpense) + Number(amount);
+        console.log(totalExpense);
 
-        res.status(201).json({ success: true, expense: newExpense });
-    } catch (error) {
-        console.log('Error adding expense:', error);
-        res.status(500).json({ success: false, message: 'Failed to add expense', error: error.message });
+        await User.update(
+            { totalExpense: totalExpense },
+            { where: { id: req.user.id }, transaction: t }
+        );
+
+        await t.commit();
+
+        return res.status(200).json({ expense: expense });
+    } catch (err) {
+        await t.rollback();
+        return res.status(500).json({ success: false, error: err.message });
     }
 };
 
@@ -34,7 +47,7 @@ exports.getExpenses = async (req, res, next) => {
         console.log('User ID:', userId);
 
         const expenses = await Expense.findAll({ where: { userId } });
-        console.log('Expenses:', expenses);
+        // console.log('Expenses:', expenses);
 
         res.status(200).json(expenses);
     } catch (error) {
@@ -46,20 +59,17 @@ exports.getExpenses = async (req, res, next) => {
 // Delete Expense
 exports.deleteExpense = async (req, res, next) => {
     try {
-        const expenseId = req.params.id;
+        const id = req.params.id;
         const userId = req.user.id;
 
-        const expense = await Expense.findByPk(expenseId);
-        if (!expense) {
-            return res.status(404).json({ message: 'Expense not found' });
-        }
+        const expense = await Expense.findByPk(id);
 
-        if (expense.userId !== userId) {
-            return res.status(403).json({ error: 'Forbidden: You are not authorized to delete this expense' });
+        if (req.user.id === userId) {
+            await expense.destroy();
+            res.sendStatus(200);
+        } else {
+            res.status(400).json({ message: "unauthorised user", success: false })
         }
-
-        await expense.destroy({where : {id:expenseId, user}});
-        res.status(200).json({ message: 'Expense deleted successfully' });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: 'An error occurred', details: error.message });
