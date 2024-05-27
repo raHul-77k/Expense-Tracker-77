@@ -3,12 +3,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const sequelize = require('./util/database'); 
 const cors = require('cors');
+const path = require('path');
 
 const userRoutes = require('./routes/userRoutes'); 
 const userExpense = require('./routes/expenseRoute');
 const purchaseRoute = require('./routes/purchase');
 const premiumFeature = require('./routes/premiumFeatures');
 const resetPasswordRoutes = require('./routes/password')
+const expenseRoutes = require('./routes/userRoutes');
 
 
 const User = require('./models/User');
@@ -28,7 +30,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // Serve static files (CSS, images, etc.) from the "public" directory
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Use userRoutes for /user route
 app.use('/user', userRoutes);
@@ -36,6 +38,7 @@ app.use('/expense', userExpense);
 app.use('/purchase',purchaseRoute);
 app.use('/premium',premiumFeature);
 app.use('/password', resetPasswordRoutes);
+app.use('/expense', expenseRoutes);
 
 //relationship between user and expenses
 User.hasMany(Expense);

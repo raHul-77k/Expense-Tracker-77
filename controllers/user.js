@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
 require('dotenv').config();
 
+
 exports.postUserDetails = async (req, res, next) => {
     console.log("in postUserDetails");
     console.log(req.body);
@@ -70,4 +71,6 @@ exports.postLoginDetails = async (req, res, next) => {
         res.status(500).json({ error: 'An error occurred', details: error.message });
     }
 };   
+
+
 
