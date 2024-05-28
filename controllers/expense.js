@@ -49,10 +49,23 @@ exports.getExpenses = async (req, res, next) => {
         const userId = req.user.id;
         console.log('User ID:', userId);
 
-        const expenses = await Expense.findAll({ where: { userId } });
-        // console.log('Expenses:', expenses);
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10;
+        const offset = (page - 1) * limit;
 
-        res.status(200).json(expenses);
+        const { count, rows } = await Expense.findAndCountAll({
+            where: { userId },
+            limit: limit,
+            offset: offset,
+        });
+
+        const totalPages = Math.ceil(count / limit);
+
+        res.status(200).json({
+            expenses: rows,
+            currentPage: page,
+            totalPages: totalPages
+        });
     } catch (error) {
         console.log("Error:", error);
         res.status(500).json({ error: 'An error occurred', details: error.message });
@@ -84,7 +97,6 @@ exports.downloadExpenses = async (req, res) => {
     try {
         // Fetch expenses from the database
         const expenses = await req.user.getExpenses();
-        console.log(expenses);
 
         // Save expenses into the database
         await Promise.all(expenses.map(async (expense) => {
@@ -98,7 +110,6 @@ exports.downloadExpenses = async (req, res) => {
             });
         }));
 
-        // Optional: Return the saved expenses or any other response as needed
         return res.status(200).json({ success: true, message: 'Expenses downloaded and saved successfully' });
     } catch (error) {
         console.error('Error:', error);

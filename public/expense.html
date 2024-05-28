@@ -46,10 +46,18 @@
             <h2>Leaderboard</h2>
             <ul id="leaderboard"></ul>
         </div>
+        <div class="pagination-controls">
+            <button id="prevPage" onclick="prevPage()">Previous</button>
+            <span id="pageInfo"></span>
+            <button id="nextPage" onclick="nextPage()">Next</button>
+        </div>
     </div>
 
     <script>
-        // JavaScript code as provided, handling form submission, premium membership, loading expenses, etc.
+        let currentPage = 1;
+        let totalPages = 1;
+        let expensesPerPage = 10;
+
         document.getElementById('expenseForm').addEventListener('submit', function(e) {
             e.preventDefault();
             var token = localStorage.getItem('token');
@@ -62,8 +70,8 @@
             var description = document.getElementById('description').value;
             var category = document.getElementById('category').value;
 
-            var obj = { amount: amount, description: description, category: category, userId: 1 };
-            
+            var obj = { amount: amount, description: description, category: category };
+
             axios.post('http://localhost:3000/expense/addexpense', obj, {
                 headers: {
                     "Authorization": "Bearer " + token
@@ -71,7 +79,7 @@
             })
             .then(function(response) {
                 if (response.status === 201) {
-                    loadExpenses();
+                    loadExpenses(currentPage, expensesPerPage);
                 } else {
                     alert('Failed to add expense');
                 }
@@ -188,11 +196,12 @@
                 alert('Failed to load leaderboard');
             }
         };
+
         function showPremiumuserMessage() {
             document.getElementById('rzp-button1').remove();
             document.getElementById('membership').innerHTML = "You are a Premium-User";
             document.getElementById('downloadexpense').disabled = false;
-            loadExpenses();
+            loadExpenses(currentPage, expensesPerPage);
         }
 
         function parseJwt(token) {
@@ -216,31 +225,38 @@
                 if (decodeToken && decodeToken.isPremiumuser) {
                     showPremiumuserMessage();
                 }
-                axios.get("http://localhost:3000/expense/getexpense", {
-                    headers: {
-                        "Authorization": "Bearer " + token
-                    }
-                })
-                .then(response => {
-                    console.log(response);
-                    for (var i = 0; i < response.data.allExpense.length; i++) {
-                        showExpenseDetails(response.data.allExpense[i]);
-                    }
-                }).catch(err => console.log(err));
+                setExpensesPerPage();
+                loadExpenses(currentPage, expensesPerPage);
             } else {
                 console.log('No token found');
             }
         });
 
-        function loadExpenses() {
+        function setExpensesPerPage() {
+            const screenHeight = window.innerHeight;
+            if (screenHeight > 1200) {
+                expensesPerPage = 40;
+            } else if (screenHeight > 800) {
+                expensesPerPage = 20;
+            } else if (screenHeight > 600) {
+                expensesPerPage = 10;
+            } else {
+                expensesPerPage = 5;
+            }
+        }
+
+        function loadExpenses(page, limit) {
             var token = localStorage.getItem('token');
-            axios.get('http://localhost:3000/expense/getexpense', {
+            axios.get(`http://localhost:3000/expense/getexpense?page=${page}&limit=${limit}`, {
                 headers: {
                     "Authorization": "Bearer " + token
                 }
             })
             .then(function (response) {
-                var expenses = response.data;
+                var expenses = response.data.expenses;
+                totalPages = response.data.totalPages;
+                currentPage = response.data.currentPage;
+
                 var expenseList = document.getElementById('expenseList');
                 expenseList.innerHTML = '';
 
@@ -258,7 +274,7 @@
                         })
                         .then(function (deleteResponse) {
                             if (deleteResponse.status === 200) {
-                                loadExpenses();
+                                loadExpenses(currentPage, expensesPerPage);
                             } else {
                                 alert('Failed to delete expense');
                             }
@@ -272,6 +288,8 @@
                     li.appendChild(deleteButton);
                     expenseList.appendChild(li);
                 });
+
+                updatePaginationControls();
             })
             .catch(function (error) {
                 console.error('Error:', error);
@@ -279,37 +297,23 @@
             });
         }
 
-        function showExpenseDetails(expense) {
-            var expenseList = document.getElementById('expenseList');
-            var li = document.createElement('li');
-            li.textContent = 'Amount: ' + expense.amount + ', Description: ' + expense.description + ', Category: ' + expense.category;
-
-            var deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Delete';
-            deleteButton.onclick = function () {
-                axios.delete('http://localhost:3000/expense/deleteexpense/' + expense.id, {
-                    headers: {
-                        "Authorization": "Bearer " + token
-                    }
-                })
-                .then(function (deleteResponse) {
-                    if (deleteResponse.status === 200) {
-                        loadExpenses();
-                    } else {
-                        alert('Failed to delete expense');
-                    }
-                })
-                .catch(function (error) {
-                    console.error('Error:', error);
-                    alert('Failed to delete expense');
-                });
-            };
-
-            li.appendChild(deleteButton);
-            expenseList.appendChild(li);
+        function updatePaginationControls() {
+            document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prevPage').disabled = currentPage <= 1;
+            document.getElementById('nextPage').disabled = currentPage >= totalPages;
         }
 
-        loadExpenses();
+        function prevPage() {
+            if (currentPage > 1) {
+                loadExpenses(--currentPage, expensesPerPage);
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                loadExpenses(++currentPage, expensesPerPage);
+            }
+        }
     </script>
 </body>
 </html>
