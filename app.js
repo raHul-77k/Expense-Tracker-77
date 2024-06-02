@@ -4,6 +4,11 @@ const bodyParser = require('body-parser');
 const sequelize = require('./util/database'); 
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
+const helmet = require('helmet');
+const compression = require('compression');
+const morgan = require('morgan');
+
 
 const userRoutes = require('./routes/userRoutes'); 
 const userExpense = require('./routes/expenseRoute');
@@ -23,11 +28,18 @@ require('dotenv').config();
 
 const app = express();
 const PORT = 3000;
+const accessLogstream = fs.createWriteStream(
+    path.join(__dirname, 'access.log'),{
+    flags : 'a'
+});
 
 app.use(express.json());
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(helmet());
+app.use(compression());
+app.use(morgan('combined', { stream: accessLogstream }))
 
 // Serve static files (CSS, images, etc.) from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));

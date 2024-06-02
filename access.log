@@ -1,0 +1,2 @@
+::1 - - [29/May/2024:18:00:56 +0000] "POST /user/login HTTP/1.1" 200 214 "-" "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36"
+::1 - - [29/May/2024:18:00:58 +0000] "GET /expense/getexpense?page=1&limit=10 HTTP/1.1" 304 - "-" "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36"
